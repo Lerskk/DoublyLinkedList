@@ -3,29 +3,43 @@ slist: .word 0
 cclist: .word 0
 wclist: .word 0
 buff: .asciiz "Mamiferos"
+buff2: .asciiz "Mamiferos2"
+buff3: .asciiz "Mamiferos3"
 # mssg: 
   .text
   .globl main
 main:
   la $a0, buff($0)
   jal newCategory 
+  la $a0, buff2($0)
+  jal newCategory 
+  la $a0, buff3($0)
+  jal newCategory 
+  li $v0, 10
+  syscall
 
 # void newCategory($a0 = categoryNameAddress)
 newCategory:
   move $a1, $a0 # input 
-  lw $a0, cclist($0)
+  lw $a0, cclist
+  move $s0, $ra # save $ra
   jal addNode
+  move $ra, $s0 # restore $ra
+  jr $ra
 
 # node* addNode($a0 = addressOfFirstNodeOfList, $a1 = nodeData)
 addNode:
-  move $t0, $a0
+  move $s1, $ra # save $ra
+  # TODO stack
+  move $s2, $a0
   jal smalloc # allocate memory for the node
+  move $t0, $s2
   sw $a1, 8($v0) # [][][ dataAddress ][]
   if0:
     bnez $t0, else0 # if($t0 == 0)
   then0:
-    sw $v0, cclist # cclist = $v0
-    sw $v0, wclist # wclist = $v0
+    sw $v0, cclist($0) # cclist = $v0
+    sw $v0, wclist($0) # wclist = $v0
     sw $v0, 0($v0) # [ prevNode ][][ dataAddress ][]
     sw $v0, 12($v0) # [ prevNode ][][ dataAddress ][ nextNode ]
     j endIf0
@@ -36,6 +50,7 @@ addNode:
     sw $v0, 12($t1) # nextNode of oldLastNode -> newNode
     sw $t1, 0($v0) # prevNode of newNode -> oldLastNode
   endIf0:
+  move $ra, $s1 # restore $ra
   jr $ra
   
 # void newnode(int number)

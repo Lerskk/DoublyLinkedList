@@ -15,8 +15,29 @@ main:
   jal newCategory 
   la $a0, buff3($0)
   jal newCategory 
+
+
+  # jal prevCategory
+  jal prevCategory
+  jal nextCategory
+  jal nextCategory
+
   li $v0, 10
   syscall
+
+# void prevCatagory()
+prevCategory:
+  lw $t0, wclist
+  lw $t0, 0($t0)
+  sw $t0, wclist
+  jr $ra
+
+# void nextCatagory()
+nextCategory:
+  lw $t0, wclist
+  lw $t0, 12($t0)
+  sw $t0, wclist
+  jr $ra
 
 # void newCategory($a0 = categoryNameAddress)
 newCategory:
@@ -38,6 +59,7 @@ addNode:
   if0:
     bnez $t0, else0 # if($t0 == 0)
   then0:
+    # TODO make this generic
     sw $v0, cclist($0) # cclist = $v0
     sw $v0, wclist($0) # wclist = $v0
     sw $v0, 0($v0) # [ prevNode ][][ dataAddress ][]

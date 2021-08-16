@@ -3,6 +3,7 @@ slist: .word 0
 cclist: .word 0
 wclist: .word 0
 menu: .asciiz "1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente categoria.\n3 - Seleccionar anterior categoria.\n4 - Listar las categorias.\n9 - Salir.\n\nIngrese la opcion deseada: "
+dataNodeMsg: .asciiz "\nIngrese el dato del nodo: "
 
   .text
   .globl main
@@ -55,21 +56,25 @@ main:
 newCategory:
   move $a1, $a0 # input 
   lw $a0, cclist
-  addi $sp, -4 # move stack pointer
-  move $sp, $ra # save $ra in the stack
+  addi $sp, $sp, -4 # move stack pointer
+  sw $ra, 0($sp) # save $ra in the stack
   jal addNode
-  move $ra, $sp # restore $ra from the stack
-  addi $sp, 4 # move stack pointer
+  lw $ra, 0($sp) # restore $ra from the stack
+  addi $sp, $sp, 4 # move stack pointer
   jr $ra
 
 # node* addNode($a0 = addressOfFirstNodeOfList)
 addNode:
-  addi $sp, -12 # move stack pointer
+  addi $sp, $sp, -12 # move stack pointer
   sw $ra, 0($sp) # save $ra in the stack
 
   sw $a0, 4($sp) # save first parameter
   jal smalloc # allocate memory for the node
   sw $v0, 8($sp) # save newNodeAddress
+  
+  li $v0, 4 
+  la $a0, dataNodeMsg
+  syscall
 
 	jal smalloc # allocate memory for the dataNode
   move $a0, $v0 # addressOfDataNode as parameter for the syscall 
@@ -97,8 +102,8 @@ addNode:
     sw $v0, 12($t1) # nextNode of oldLastNode -> newNode
     sw $t1, 0($v0) # prevNode of newNode -> oldLastNode
   endIf0:
-  move $ra, $ra # restore $ra from the stack
-  addi $ra, 4 # move stack pointer
+  lw $ra, 0($sp) # restore $ra from the stack
+  addi $sp, $sp, 12 # move stack pointer
   jr $ra
 
 # void prevCatagory()

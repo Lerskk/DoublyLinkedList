@@ -54,21 +54,31 @@ main:
   li $v0, 10
   syscall
 
-# void newCategory($a0 = categoryNameAddress)
+# node* newCategory()
 newCategory:
-  move $a1, $a0 # input 
-  lw $a0, cclist
-  addi $sp, $sp, -4 # move stack pointer
+  addi $sp, $sp, -8 # move stack pointer
   sw $ra, 0($sp) # save $ra in the stack
+  sw $a0, 4($sp) # save first parameter of addNode
+  lw $a0, cclist
+  la $a1, cclist
   jal addNode
+  lw $t0, 4($sp) # restore first parameter of addNode in $t0
+
+  if2:
+    bnez $t0, endIf2
+  thenIf2:
+    sw $v0, wclist($0) # wclist = $v0
+  endIf2:
+
   lw $ra, 0($sp) # restore $ra from the stack
-  addi $sp, $sp, 4 # move stack pointer
+  addi $sp, $sp, 8 # move stack pointer
   jr $ra
 
-# node* addNode($a0 = addressOfFirstNodeOfList)
+# node* addNode($a0 = addressOfFirstNodeOfList, $a1 = addressOfListPointer)
 addNode:
-  addi $sp, $sp, -12 # move stack pointer
+  addi $sp, $sp, -16 # move stack pointer
   sw $ra, 0($sp) # save $ra in the stack
+  sw $a1, 12($sp)
 
   sw $a0, 4($sp) # save first parameter
   jal smalloc # allocate memory for the node
@@ -88,12 +98,11 @@ addNode:
   sw $a0, 8($v0) # [][][ dataAddress ][]
 
   lw $t0, 4($sp) # restore first parameter in $t0
+  lw $a1, 12($sp) # restore second parameter in $a1
   if0:
     bnez $t0, else0 # if($t0 == 0)
   then0:
-    # TODO make this generic
-    sw $v0, cclist($0) # cclist = $v0
-    sw $v0, wclist($0) # wclist = $v0
+    sw $v0, 0($a1) # cclist = $v0
     sw $v0, 0($v0) # [ prevNode ][][ dataAddress ][]
     sw $v0, 12($v0) # [ prevNode ][][ dataAddress ][ nextNode ]
     j endIf0
@@ -105,7 +114,7 @@ addNode:
     sw $t1, 0($v0) # prevNode of newNode -> oldLastNode
   endIf0:
   lw $ra, 0($sp) # restore $ra from the stack
-  addi $sp, $sp, 12 # move stack pointer
+  addi $sp, $sp, 16 # move stack pointer
   jr $ra
 
 # void prevCatagory()

@@ -2,7 +2,7 @@
 slist: .word 0
 cclist: .word 0
 wclist: .word 0
-menu: .asciiz "\n1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente categoria.\n3 - Seleccionar anterior categoria.\n4 - Listar las categorias.\n9 - Salir.\n\nIngrese la opcion deseada: "
+menu: .asciiz "\n1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente categoria.\n3 - Seleccionar anterior categoria.\n4 - Listar las categorias.\n6 - Anexar objeto a la categoria seleccionada.\n9 - Salir.\n\nIngrese la opcion deseada: "
 dataNodeMsg: .asciiz "\nIngrese el dato del nodo: "
 
   .text
@@ -41,12 +41,20 @@ main:
         j endSwitch
 
       case5:
+        # TODO delete category
+      case6:
+        bne $v0, 6, case7
+        jal newObject
+        j endSwitch
+
+      case7:
+        # TODO display object
       case9:
         bne $v0, 9, default
         j endfor0
       
       default:
-
+        # TODO error message
     endSwitch:
 
     j for0
@@ -156,6 +164,35 @@ displayCategories:
     lw $t1, 12($t1)
     j for1
   endfor1:
+  jr $ra
+
+newObject:
+  addi $sp, $sp, -8
+  sw $ra, 0($sp)
+  lw $a1, wclist
+  addi $a1, $a1, 4
+  lw $a0, 0($a1)
+  la $a1, 0($a1)
+
+  sw $a0, 4($sp) # save $a0 in the stack
+  jal addNode
+  lw $t0, 4($sp) # restore $a0 from the stack in $t0
+
+  if3:
+    bnez $t0, else3
+  then3:
+    li $t0, 1
+    sw $t0, 4($v0)
+    j endIf3
+  else3:
+    lw $t0, 0($v0) # take prevNode
+    lw $t0, 4($t0)
+    addi $t0, $t0, 1
+    sw $t0, 4($v0)
+  endIf3:
+
+  lw $ra, 0($sp)
+  addi $sp, $sp, 8
   jr $ra
 
 # void newnode(int number)

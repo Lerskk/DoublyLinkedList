@@ -2,7 +2,7 @@
 slist: .word 0
 cclist: .word 0
 wclist: .word 0
-menu: .asciiz "1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente categoria.\n3 - Seleccionar anterior categoria.\n4 - Listar las categorias.\n9 - Salir.\n\nIngrese la opcion deseada: "
+menu: .asciiz "\n1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente categoria.\n3 - Seleccionar anterior categoria.\n4 - Listar las categorias.\n9 - Salir.\n\nIngrese la opcion deseada: "
 dataNodeMsg: .asciiz "\nIngrese el dato del nodo: "
 
   .text
@@ -27,18 +27,20 @@ main:
 
       case2:
         bne $v0, 2, case3
-        jal nextCatagory
+        jal nextCategory
         j endSwitch
 
       case3:
         bne $v0, 3, case4
-        jal prevCatagory
+        jal prevCategory
         j endSwitch
 
       case4:
         bne $v0, 4, case5
+        jal displayCategories
         j endSwitch
 
+      case5:
       case9:
         bne $v0, 9, default
         j endfor0
@@ -120,25 +122,62 @@ nextCategory:
   sw $t0, wclist
   jr $ra
 
+# void displayCategories()
+displayCategories:
+  li $v0, 11
+  li $a0, '\n'
+  syscall
 
+  lw $t9, wclist
+  lw $t1, cclist
+  lw $t0, 0($t1) # $t1 = current and $t0 = lastNode
+  for1:
+    if1:
+      bne $t1, $t9, endIf1
+    then1:
+      li $v0, 11
+      li $a0, '*'
+      syscall
+    endIf1:
+    lw $a0, 8($t1)
+    li $v0, 4
+    syscall
 
-# node* smalloc()
+    beq $t0, $t1, endfor1
+    lw $t1, 12($t1)
+    j for1
+  endfor1:
+  jr $ra
+
+# void newnode(int number)
+newnode: move $t0, $a0 # preserva arg 1
+ li $v0, 9
+ li $a0, 8
+ syscall # sbrk 8 bytes long
+ sw $t0, ($v0) # guarda el arg en new node
+ lw $t1, slist
+ beq $t1, $0, first # ? si la lista es vacia
+ sw $t1, 4($v0) # inserta new node por el frente
+ sw $v0, slist # actualiza la lista
+ jr $ra
+first: sw $0, 4($v0) # primer nodo inicializado a null
+ sw $v0, slist # apunta la lista a new node
+ jr $ra
+
 smalloc:
-  lw $t0, slist
-  beqz $t0, sbrk
-  move $v0, $t0
-  lw $t0, 12($t0)
-  sw $t0, slist
-  jr $ra
+ lw $t0, slist
+ beqz $t0, sbrk
+ move $v0, $t0
+ lw $t0, 12($t0)
+ sw $t0, slist
+ jr $ra
 sbrk:
-  li $a0, 16 # node size fixed 4 words
-  li $v0, 9
-  syscall # return node address in v0
-  jr $ra
-
+ li $a0, 16 # node size fixed 4 words
+ li $v0, 9
+ syscall # return node address in v0
+ jr $ra
 sfree:
-  la $t0, slist
-  sw $t0, 12($a0)
-  sw $a0, slist # $a0 node address in unused list
-  jr $ra
-  .end
+ la $t0, slist
+ sw $t0, 12($a0)
+ sw $a0, slist # $a0 node address in unused list
+ jr $ra

@@ -2,8 +2,9 @@
 slist: .word 0
 cclist: .word 0
 wclist: .word 0
-menu: .asciiz "\n1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente categoria.\n3 - Seleccionar anterior categoria.\n4 - Listar las categorias.\n6 - Anexar objeto a la categoria seleccionada.\n9 - Salir.\n\nIngrese la opcion deseada: "
+menu: .asciiz "\n1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente categoria.\n3 - Seleccionar anterior categoria.\n4 - Listar las categorias.\n6 - Anexar objeto a la categoria seleccionada. \n8 - Listar los objectos de la categoria seleccionada. \n9 - Salir.\n\nIngrese la opcion deseada: "
 dataNodeMsg: .asciiz "\nIngrese el dato del nodo: "
+objectSeparator: .asciiz ": "
 
   .text
   .globl main
@@ -48,7 +49,11 @@ main:
         j endSwitch
 
       case7:
-        # TODO display object
+        # TODO delete object
+      case8:
+        bne $v0, 8, case9
+        jal displayObjects
+        j endSwitch
       case9:
         bne $v0, 9, default
         j endfor0
@@ -166,6 +171,7 @@ displayCategories:
   endfor1:
   jr $ra
 
+# void newObject()
 newObject:
   addi $sp, $sp, -8
   sw $ra, 0($sp)
@@ -193,6 +199,34 @@ newObject:
 
   lw $ra, 0($sp)
   addi $sp, $sp, 8
+  jr $ra
+
+# void displayObjects()
+displayObjects:
+  li $a0, '\n'
+  li $v0, 11 # print char
+  syscall
+
+  lw $t0, wclist # working category
+  lw $t0, 4($t0) # firstObjectNode
+  move $t1, $t0 # copy of firstObjectNode
+  for2:
+    lw $a0, 4($t0) # display object id
+    li $v0, 1 # print int
+    syscall 
+    
+    la $a0, objectSeparator # display ": " between the id and the object data
+    li $v0, 4 # print sting
+    syscall
+
+    lw $a0, 8($t0) # display objectData
+    syscall
+
+    lw $t0, 12($t0)
+    beq $t0, $t1, endfor2
+    j for2 
+  endfor2:
+
   jr $ra
 
 # void newnode(int number)

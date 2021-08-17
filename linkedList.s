@@ -43,6 +43,10 @@ main:
 
       case5:
         # TODO delete category
+        bne $v0, 5, case6
+        lw $a0, wclist 
+        jal delNode
+        j endSwitch
       case6:
         bne $v0, 6, case7
         jal newObject
@@ -128,6 +132,29 @@ addNode:
   endIf0:
   lw $ra, 0($sp) # restore $ra from the stack
   addi $sp, $sp, 16 # move stack pointer
+  jr $ra
+
+# void delNode( $a0 = node*)
+delNode:
+  addi $sp, $sp, -8 # move stack pointer
+  sw $a0, 4($sp) # save node address
+  sw $ra, 0($sp) # save $ra
+
+  lw $t0, 0($a0) # prev node address
+  lw $t1, 12($a0) # next node address
+  
+  sw $t0, 0($t1) # prev of next = prev
+  sw $t1, 12($t0) # next of prev = next
+
+
+  lw $a0, 8($a0) # data node address as first parameter of sfree
+  jal sfree # free third field
+
+  lw $a0, 4($sp) # restore node address
+  jal sfree # free node
+
+  lw $ra, 0($sp) # restore $ra
+  addi $sp, $sp, 8 # move stack poinetr
   jr $ra
 
 # void prevCatagory()

@@ -37,6 +37,7 @@ main:
         j endSwitch
 
       case4:
+        # TODO display empty list
         bne $v0, 4, case5
         jal displayCategories
         j endSwitch
@@ -44,8 +45,7 @@ main:
       case5:
         # TODO delete category
         bne $v0, 5, case6
-        lw $a0, wclist 
-        jal delNode
+        jal delCategory
         j endSwitch
       case6:
         bne $v0, 6, case7
@@ -155,6 +155,51 @@ delNode:
 
   lw $ra, 0($sp) # restore $ra
   addi $sp, $sp, 8 # move stack poinetr
+  jr $ra
+
+
+# void delCategory()
+delCategory:
+  addi $sp, $sp, -4 # move stack pointer
+  sw $ra, 0($sp) # store $ra in the stack
+  lw $t0, wclist # working category
+  addi $t3, $t0, 4 # address of first object of the category
+  lw $t4, 0($t3) # first object of the category
+  addi $t1, $t0, 12 # next category
+  lw $t2, cclist # first category
+  if4:
+		bne $t0, $t1, else4 # next == wclist then there's only one node
+  then4:
+    li $t9, 0
+    sw $t9, cclist # first category = null
+
+    j endIf4
+  else4:
+    if5:
+      bne $t0, $t2, endIf5 # node address == cclist
+    then5:
+      lw $t1, 0($t1)
+      sw $t1, cclist # cclist = next node
+    endIf5:
+  endIf4:
+
+  for3:
+    move $a0, $t4
+    jal delNode
+    
+    lw $t4, 12($t4)
+    beq $t4, $t3, endFor3
+    j for3
+  endFor3:
+    
+  lw $t2, cclist # first category
+  sw $t2, wclist # wclist = cclist
+
+  move $a0, $t0 # node address as first parameter of delNode
+  jal delNode # delete category
+
+  lw $ra, 0($sp) # restore $ra
+  addi $sp, $sp, 4 # move stack pointer
   jr $ra
 
 # void prevCatagory()
@@ -284,7 +329,7 @@ sbrk:
  syscall # return node address in v0
  jr $ra
 sfree:
- la $t0, slist
+ lw $t0, slist
  sw $t0, 12($a0)
  sw $a0, slist # $a0 node address in unused list
  jr $ra

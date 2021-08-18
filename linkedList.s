@@ -19,7 +19,7 @@ main:
 
     beq $v0, 9, endfor0
     
-		switch:
+	switch:
       case1:
         bne $v0, 1, case2
         lw $a0, cclist
@@ -160,46 +160,60 @@ delNode:
 
 # void delCategory()
 delCategory:
-  addi $sp, $sp, -4 # move stack pointer
+  addi $sp, $sp, -8 # move stack pointer
   sw $ra, 0($sp) # store $ra in the stack
+
   lw $t0, wclist # working category
-  addi $t3, $t0, 4 # address of first object of the category
-  lw $t4, 0($t3) # first object of the category
+  sw $t0, 4($sp) # store working category
+  addi $t3, $t0, 4 # address of address of first object of the category
+  lw $t4, 0($t3) # address of the first object of the category
+  lw $t3, 0($t3) # address of the first object of the category
+  lw $t3, 0($t3) # prev of teh first object of the category
   addi $t1, $t0, 12 # next category
+  lw $t1, 12($t0)
   lw $t2, cclist # first category
   if4:
 		bne $t0, $t1, else4 # next == wclist then there's only one node
   then4:
-    li $t9, 0
-    sw $t9, cclist # first category = null
+    la $t8, cclist($0)
+    sw $0, 0($t8) # first category = null
 
     j endIf4
   else4:
     if5:
       bne $t0, $t2, endIf5 # node address == cclist
     then5:
-      lw $t1, 0($t1)
-      sw $t1, cclist # cclist = next node
+      la $t8, cclist($0)
+      sw $t1, 0($t8) # cclist = next node
     endIf5:
   endIf4:
 
-  for3:
-    move $a0, $t4
-    jal delNode
-    
-    lw $t4, 12($t4)
-    beq $t4, $t3, endFor3
-    j for3
-  endFor3:
+  lw $t0, 4($sp) # restore woking category
+  lw $t5, 4($t0) # load address of the object 
+  if6:
+    beqz $t5, endIf6 # if wclist == 0 => has an object
+  then6:
+    for3:
+      lw $t5, 12($t4)
+      move $a0, $t4
+      jal delNode
+      
+      beq $t4, $t3, endFor3
+      move $t4, $t5
+      j for3
+    endFor3:
+  endIf6:
+
     
   lw $t2, cclist # first category
   sw $t2, wclist # wclist = cclist
 
+  lw $t0, 4($sp) # restore woking category
   move $a0, $t0 # node address as first parameter of delNode
   jal delNode # delete category
 
   lw $ra, 0($sp) # restore $ra
-  addi $sp, $sp, 4 # move stack pointer
+  addi $sp, $sp, 8 # move stack pointer
   jr $ra
 
 # void prevCatagory()

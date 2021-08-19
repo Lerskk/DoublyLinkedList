@@ -303,7 +303,7 @@ displayCategories:
   lw $t0, 0($t1) # $t1 = current and $t0 = lastNode
   for1:
     if1:
-      bne $t1, $t9, endIf1
+      bne $t1, $t9, endIf1 # if the current category is selected display an * before its name
     then1:
       li $v0, 11
       li $a0, '*'
@@ -377,20 +377,20 @@ displayObjects:
 
   jr $ra
 
-# void newnode(int number)
-newnode: move $t0, $a0 # preserva arg 1
- li $v0, 9
- li $a0, 8
- syscall # sbrk 8 bytes long
- sw $t0, ($v0) # guarda el arg en new node
- lw $t1, slist
- beq $t1, $0, first # ? si la lista es vacia
- sw $t1, 4($v0) # inserta new node por el frente
- sw $v0, slist # actualiza la lista
- jr $ra
-first: sw $0, 4($v0) # primer nodo inicializado a null
- sw $v0, slist # apunta la lista a new node
- jr $ra
+# # void newnode(int number)
+# newnode: move $t0, $a0 # preserva arg 1
+#  li $v0, 9
+#  li $a0, 8
+#  syscall # sbrk 8 bytes long
+#  sw $t0, ($v0) # guarda el arg en new node
+#  lw $t1, slist
+#  beq $t1, $0, first # ? si la lista es vacia
+#  sw $t1, 4($v0) # inserta new node por el frente
+#  sw $v0, slist # actualiza la lista
+#  jr $ra
+# first: sw $0, 4($v0) # primer nodo inicializado a null
+#  sw $v0, slist # apunta la lista a new node
+#  jr $ra
 
 smalloc:
  lw $t0, slist
@@ -404,6 +404,7 @@ sbrk:
  li $v0, 9
  syscall # return node address in v0
  jr $ra
+ 
 sfree:
  lw $t0, slist
  sw $t0, 12($a0)

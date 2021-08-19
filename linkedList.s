@@ -2,8 +2,9 @@
 slist: .word 0
 cclist: .word 0
 wclist: .word 0
-menu: .asciiz "\n1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente categoria.\n3 - Seleccionar anterior categoria.\n4 - Listar las categorias.\n6 - Anexar objeto a la categoria seleccionada. \n8 - Listar los objectos de la categoria seleccionada. \n9 - Salir.\n\nIngrese la opcion deseada: "
+menu: .asciiz "\n1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente categoria.\n3 - Seleccionar anterior categoria.\n4 - Listar las categorias.\n5 - Borrar categoria seleccionada.\n6 - Anexar objeto a la categoria seleccionada.\n7 - Borrar un objeto de la categoria seleccionada.\n8 - Listar los objectos de la categoria seleccionada. \n9 - Salir.\n\nIngrese la opcion deseada: "
 dataNodeMsg: .asciiz "\nIngrese el dato del nodo: "
+objectNodeIdMsg: .asciiz "\nIngrese el id del objeto: "
 objectSeparator: .asciiz ": "
 
   .text
@@ -43,7 +44,6 @@ main:
         j endSwitch
 
       case5:
-        # TODO delete category
         bne $v0, 5, case6
         jal delCategory
         j endSwitch
@@ -53,7 +53,17 @@ main:
         j endSwitch
 
       case7:
-        # TODO delete object
+        bne $v0, 7, case8
+        la $a0, objectNodeIdMsg
+        li $v0, 4
+        syscall
+
+        li $v0, 5
+        syscall
+        move $a0, $v0
+
+        jal delObject
+        j endSwitch
       case8:
         bne $v0, 8, case9
         jal displayObjects
@@ -134,7 +144,7 @@ addNode:
   addi $sp, $sp, 16 # move stack pointer
   jr $ra
 
-# void delNode( $a0 = node*)
+# void delNode($a0 = node*)
 delNode:
   addi $sp, $sp, -8 # move stack pointer
   sw $a0, 4($sp) # save node address
@@ -214,6 +224,58 @@ delCategory:
 
   lw $ra, 0($sp) # restore $ra
   addi $sp, $sp, 8 # move stack pointer
+  jr $ra
+
+# void delObject($a0 = id)
+delObject: 
+  addi $sp, $sp, -4
+  sw $ra, 0($sp) # save $ra to the stack
+  lw $t5, wclist
+  lw $t0, 4($t5) # address of first object of the category
+  lw $t1, 0($t0) # address of last object of the category
+
+  # loop through objects
+  # check if the id matches
+  # call delNode and break the for
+  lw $t2, 4($t0) # id of the first object
+  if7:
+    bne $a0, $t2, else7 # if id != first id => exsist more than one object then loop
+  then7:
+    lw $t3, 12($t0) # load nextNode of the first node
+    if8:
+      bne $t1, $t0, else8  # prevNode != nextNode then there's more than one object
+    then8:
+      sw $0, 4($t5) # remap second field of working category to null as there aren't any other objects
+
+      move $a0, $t0 
+      jal delNode
+
+      j endIf8
+    else8:
+      sw $t3, 4($t5) # remap second field of working category to second object
+
+      move $a0, $t0
+      jal delNode
+    endIf8:
+    j endIf7
+  else7:
+    for4:
+      lw $t2, 4($t0) # id of current object
+      if9:
+        bne $a0, $t2, endIf8 # if id of current object == id 
+      then9:
+        move $a0, $t0
+        jal delNode # then delNode
+        j endFor4 # break for
+      endIf9:
+      
+      beq $t0, $t1, endFor4
+      lw $t0, 12($t0)
+    endFor4:
+  endIf7:
+
+  lw $ra, 0($sp) # restore $sp from the stack
+  addi $sp, $sp, 4 # move stack pointer
   jr $ra
 
 # void prevCatagory()

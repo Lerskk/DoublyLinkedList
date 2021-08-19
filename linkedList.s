@@ -65,6 +65,7 @@ main:
         jal delObject
         j endSwitch
       case8:
+        # TODO display empty list
         bne $v0, 8, case9
         jal displayObjects
         j endSwitch
@@ -239,7 +240,7 @@ delObject:
   # call delNode and break the for
   lw $t2, 4($t0) # id of the first object
   if7:
-    bne $a0, $t2, else7 # if id != first id => exsist more than one object then loop
+    bne $a0, $t2, else7 # if id != first id => the object to delete is not the first one
   then7:
     lw $t3, 12($t0) # load nextNode of the first node
     if8:
@@ -321,9 +322,9 @@ displayCategories:
 
 # void newObject()
 newObject:
-  addi $sp, $sp, -8
-  sw $ra, 0($sp)
-  lw $a1, wclist
+  addi $sp, $sp, -8 # move stack pointer
+  sw $ra, 0($sp) # save ra in the stack
+  lw $a1, wclist 
   addi $a1, $a1, 4
   lw $a0, 0($a1)
   la $a1, 0($a1)
@@ -333,10 +334,10 @@ newObject:
   lw $t0, 4($sp) # restore $a0 from the stack in $t0
 
   if3:
-    bnez $t0, else3
+    bnez $t0, else3 
   then3:
     li $t0, 1
-    sw $t0, 4($v0)
+    sw $t0, 4($v0) # [][0x1][][]
     j endIf3
   else3:
     lw $t0, 0($v0) # take prevNode

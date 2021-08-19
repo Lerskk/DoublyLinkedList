@@ -60,3 +60,19 @@ Este set de funciones se encarga de modificar wclist para que apunte a la anteri
 displayCategories itera a travez de las categorias existentes mediante el uso de la lista doblemente enlazada. En el caso de que el nodo el cual esta cargado sea tambien el nodo en el wclist, esto hara que se muestre en la consola un '\*' a forma de identificar la categoria seleccionada.
 
 ### delCategory
+
+delCategory se encarga de evaluar si hay un solo nodo, en ese caso asigna cclist a null, en caso contrario analiza si la categoria que se desea eliminar es la primera de la lista, de ser asi asigna cclist al segundo nodo de la lista ya que ahora este pasaria a ser el primer nodo. En culaquier otro caso cclist se mantendra con su valor actual ya que no se elimina la primer categoria de la lista.
+
+Si la categoria a borrar tiene objetos asociados, itera a travez de ellos eliminando uno por uno.
+
+Por ultimo asigna la wclist al primer nodo de la lista y finalmente llama a delNode.
+
+### newObject
+
+newObject se encarga de llamar a addNode. Luego de esto verifica si el nodo que se creo fue el primer objeto de la categoria. En ese caso asignara un 1 como el id del objeto creado, si no asignara el id como el id del objeto anterior incrementado en 1.
+
+### delObject
+
+delObject se encargara de fijarse si el nodo que se desea eliminar es el primero, de ser cierto verificara si este objeto es el unico de la categoria. En ese caso el puntero del segundo campo de la categoria seleccionada se asignara a null, indicando que la categoria ya no tiene mas objetos. En el caso de que sea el primero pero no sea el unico objeto de la categoria, asignara el puntero mencionado al segundo objeto de la categoria. En ambos casos, se procede a eliminar el objeto utilizando delNode.
+
+En el caso de que no sea el primer objeto de la categoria, la funcion itera a travez de todos los objetos hasta encontrar el objeto con el id deseado y lo borra mediante delNode.

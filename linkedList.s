@@ -6,6 +6,8 @@ menu: .asciiz "\n1 - Crear nueva categoria vacia.\n2 - Seleccionar siguiente cat
 dataNodeMsg: .asciiz "\nIngrese el dato del nodo: "
 objectNodeIdMsg: .asciiz "\nIngrese el id del objeto: "
 objectSeparator: .asciiz ": "
+emptyCategories: .asciiz "\nNo existe ninguna categoria\n"
+emptyObjects: .asciiz "\nNo existe ningun objeto\n"
 
   .text
   .globl main
@@ -38,7 +40,6 @@ main:
         j endSwitch
 
       case4:
-        # TODO display empty list
         bne $v0, 4, case5
         jal displayCategories
         j endSwitch
@@ -175,8 +176,8 @@ delCategory:
   sw $ra, 0($sp) # store $ra in the stack
 
   lw $t0, wclist # working category
-  sw $t0, 4($sp) # store working category
-  addi $t3, $t0, 4 # address of address of first object of the category
+  sw $t0, 4($sp) # store working category in the stack
+  addi $t3, $t0, 8 # address of address of first object of the category
   lw $t4, 0($t3) # address of the first object of the category
   lw $t3, 0($t3) # address of the first object of the category
   lw $t3, 0($t3) # prev of teh first object of the category
@@ -295,29 +296,40 @@ nextCategory:
 
 # void displayCategories()
 displayCategories:
-  li $v0, 11
-  li $a0, '\n'
-  syscall
-
-  lw $t9, wclist
-  lw $t1, cclist
-  lw $t0, 0($t1) # $t1 = current and $t0 = lastNode
-  for1:
-    if1:
-      bne $t1, $t9, endIf1 # if the current category is selected display an * before its name
-    then1:
-      li $v0, 11
-      li $a0, '*'
-      syscall
-    endIf1:
-    lw $a0, 8($t1)
+  lw $t0, cclist
+  if10: 
+    bnez $t0, else10 # if cclist == 0 => dosn't exist any categories
+  then10: 
     li $v0, 4
+    la $a0, emptyCategories
+    syscall
+  j endIf10
+
+  else10:
+    li $v0, 11
+    li $a0, '\n'
     syscall
 
-    beq $t0, $t1, endfor1
-    lw $t1, 12($t1)
-    j for1
-  endfor1:
+    lw $t9, wclist
+    lw $t1, cclist
+    lw $t0, 0($t1) # $t1 = current and $t0 = lastNode
+    for1:
+      if1:
+        bne $t1, $t9, endIf1 # if the current category is selected display an * before its name
+      then1:
+        li $v0, 11
+        li $a0, '*'
+        syscall
+      endIf1:
+      lw $a0, 8($t1)
+      li $v0, 4
+      syscall
+
+      beq $t0, $t1, endfor1
+      lw $t1, 12($t1)
+      j for1
+    endfor1:
+  endIf10:
   jr $ra
 
 # void newObject()

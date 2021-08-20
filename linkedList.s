@@ -7,7 +7,8 @@ dataNodeMsg: .asciiz "\nIngrese el dato del nodo: "
 objectNodeIdMsg: .asciiz "\nIngrese el id del objeto: "
 objectSeparator: .asciiz ": "
 emptyCategories: .asciiz "\nNo existe ninguna categoria\n"
-emptyObjects: .asciiz "\nNo existe ningun objeto\n"
+emptyObjects: .asciiz "\nNo existe ningun objeto en esta categoria\n"
+incorrectOption: .asciiz "\nLa opcion ingresada es incorrecta\n"
 
   .text
   .globl main
@@ -75,7 +76,9 @@ main:
         j endfor0
       
       default:
-        # TODO error message
+        li $v0, 4 # print stirng
+        la $a0, incorrectOption # error msg
+        syscall 
     endSwitch:
 
     j for0

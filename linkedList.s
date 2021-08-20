@@ -364,29 +364,40 @@ newObject:
 
 # void displayObjects()
 displayObjects:
-  li $a0, '\n'
-  li $v0, 11 # print char
-  syscall
-
-  lw $t0, wclist # working category
-  lw $t0, 4($t0) # firstObjectNode
-  move $t1, $t0 # copy of firstObjectNode
-  for2:
-    lw $a0, 4($t0) # display object id
-    li $v0, 1 # print int
-    syscall 
-    
-    la $a0, objectSeparator # display ": " between the id and the object data
-    li $v0, 4 # print sting
+  lw $t0, wclist # working list
+  lw $t0, 4($t0) # load second field from the working category
+  if11:
+    bnez $t0, else11 # if $t0 == 0 => dosn't exist any objects
+  then11:
+    li $v0, 4
+    la $a0, emptyObjects
+    syscall
+    j endIf11
+  else11:
+    li $a0, '\n'
+    li $v0, 11 # print char
     syscall
 
-    lw $a0, 8($t0) # display objectData
-    syscall
+    lw $t0, wclist # working category
+    lw $t0, 4($t0) # firstObjectNode
+    move $t1, $t0 # copy of firstObjectNode
+    for2:
+      lw $a0, 4($t0) # display object id
+      li $v0, 1 # print int
+      syscall 
+      
+      la $a0, objectSeparator # display ": " between the id and the object data
+      li $v0, 4 # print sting
+      syscall
 
-    lw $t0, 12($t0)
-    beq $t0, $t1, endfor2
-    j for2 
-  endfor2:
+      lw $a0, 8($t0) # display objectData
+      syscall
+
+      lw $t0, 12($t0)
+      beq $t0, $t1, endfor2
+      j for2 
+    endfor2:
+  endIf11:
 
   jr $ra
 
